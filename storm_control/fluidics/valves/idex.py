@@ -78,7 +78,7 @@ class TitanValve(AbstractValve):
         return port_ID < self.port_count
 
     def write(self, message):
-        appendedMessage = message + '\r'
+        appendedMessage = message + '\n'
         self.serial.write(appendedMessage.encode())
 
     def read(self):

@@ -1,0 +1,16 @@
+Metadata-Version: 1.1
+Name: storm-control
+Version: 2.0
+Summary: STORM microscope control code.
+Home-page: https://github.com/ZhuangLab/storm-control
+Author: Hazen Babcock
+Author-email: hbabcock at fas.harvard.edu
+License: UNKNOWN
+Description: UNKNOWN
+Keywords: storm,microscopy
+Platform: UNKNOWN
+Classifier: Development Status :: 4 - Beta
+Classifier: Intended Audience :: Developers
+Classifier: License :: MIT
+Classifier: Programming Language :: C
+Classifier: Programming Language :: Python :: 3

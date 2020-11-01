@@ -3,13 +3,11 @@
 Interface to Point Grey's PySpin Python module.
 
 Tested with "Spinnaker 1.19 for Python 2 and 3 - Windows (64-bit)".
-Updated to handle Spinnaker 2.0
 
 Note: As currently written this is designed to work with 12 bit cameras. See
       onImageEvent() in SpinImageEventHandler class.
 
 Hazen 01/19
-Jeff 08/20
 """
 
 import numpy
@@ -22,13 +20,6 @@ camera_list = None
 n_active_cameras = 0
 system = None
 
-# Capture the PySpin version
-try:
-    SpinImageEventClass = PySpin.ImageEventHandler
-    pyspin_version = 2
-except:
-    SpinImageEventClass = PySpin.ImageEvent
-    pyspin_version = 1
 
 class SpinnakerException(Exception):
     """
@@ -198,10 +189,7 @@ class SpinCamera(object):
 
         # Register for image events.
         self.image_event_handler = SpinImageEventHandler(frame_buffer = self.frames)
-        if pyspin_version >=2:
-            self.h_camera.RegisterEventHandler(self.image_event_handler)
-        else:
-            self.h_camera.RegisterEvent(self.image_event_handler)
+        self.h_camera.RegisterEvent(self.image_event_handler)
                 
         # Cached properties, these are called 'nodes' in Spinakker.
         self.properties = {}
@@ -302,11 +290,7 @@ class SpinCamera(object):
         """
         Call this only when you are done with this class instance and camera.
         """
-        if pyspin_version >= 2:
-            self.h_camera.UnregisterEventHandler(self.image_event_handler)
-        else:
-            self.h_camera.UnregisterEvent(self.image_event_handler)
-
+        self.h_camera.UnregisterEvent(self.image_event_handler)
         self.h_camera.DeInit()
         self.h_camera = None
 
@@ -328,7 +312,7 @@ class SpinCamera(object):
         self.frames.clear()
 
 
-class SpinImageEventHandler(SpinImageEventClass):
+class SpinImageEventHandler(PySpin.ImageEvent):
     """
     This handles a new image from the camera. It converts it to a SCamData
     object and adds the object to the cameras list of frames.

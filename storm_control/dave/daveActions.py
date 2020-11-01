@@ -12,7 +12,7 @@
 
 from xml.etree import ElementTree
 from PyQt5 import QtCore
-
+from storm_control.sc_hardware.lumencor.celesta import lumencor_httpcommand
 import storm_control.sc_library.tcpMessage as tcpMessage
 
 ## addField
@@ -882,12 +882,104 @@ class DASetDirectory(DaveAction):
     #
     def setup(self, node):
         self.directory = node.find("directory").text
+        import os
+        if not os.path.exists(self.directory):
+            os.makedirs(self.directory)
         self.message = tcpMessage.TCPMessage(message_type = "Set Directory",
                                              message_data = {"directory": self.directory})
 
         # Require validation
         self.id = self.message.getType() + " "
         self.id += self.directory
+## DALightEngineWakeup
+#
+# This action wakes up a light engine via http command.
+# Useful for the celesta light engine if stanby mode is enabled.
+#
+class DALightEngineWakeup(DaveAction):
+
+    ## __init__
+    #
+    def __init__(self):
+        DaveAction.__init__(self)
+    
+    ## abort
+    #
+    # Handle an external abort call
+    #
+    def abort(self):
+        self.delay_timer.stop()
+        self.completeAction(self.message)
+
+    ## cleanUp
+    #
+    # Handle clean up of the action
+    #
+    def cleanUp(self):
+        pass
+
+    ## createETree
+    #
+    # @param dict A dictionary.
+    #
+    # @return A ElementTree object or None.
+    #
+    def createETree(self, dictionary):
+        delay = dictionary.get("wakeup")
+        if delay is not None:
+            block = ElementTree.Element(str(type(self).__name__))
+            addField(block, "wakeup", delay)
+            return block
+
+    ## getDescriptor
+    #
+    # @return A string that describes the action.
+    #
+    def getDescriptor(self):
+        return "wake up light engine and pause for " + str(self.delay) + "ms"
+
+    ## handleTimerComplete
+    #
+    # Handle completion of the felay timer
+    #
+    def handleTimerComplete(self):
+        self.completeAction(self.message)
+
+    ## setup
+    #
+    # Perform post creation initialization.
+    #
+    # @param node The node of an ElementTree.
+    #
+    def setup(self, node):
+
+        # Prepare delay timer
+        self.delay_timer = QtCore.QTimer(self)
+        self.delay_timer.setSingleShot(True)
+        self.delay_timer.timeout.connect(self.handleTimerComplete)
+        self.delay = int(node.find("wakeup").text)
+        
+        # Create message and add delay time for accurate dave time estimates
+        self.message = tcpMessage.TCPMessage(message_type = "Delay",
+                                             message_data = {"delay": self.delay});
+        self.message.addResponse("duration", self.delay)
+
+    ## start
+    #
+    # Start the action.
+    #
+    # @param dummy Ignored.
+    # @param test_mode Send the command in test mode.
+    #
+    def start(self, dummy, test_mode):
+        self.message.setTestMode(test_mode)
+
+        if self.message.isTest():
+            self.completeAction(self.message)
+        else:
+            lumencor_httpcommand(command = 'WAKEUP')
+            self.delay_timer.start(self.delay)
+            print("Delaying " + str(self.delay) + " ms")
 
 ## DASetFocusLockTarget
 #

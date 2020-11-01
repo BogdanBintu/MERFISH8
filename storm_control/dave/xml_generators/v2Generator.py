@@ -125,7 +125,10 @@ class XMLRecipeParser(QtWidgets.QWidget):
                 new_node = daveActions.DASetDirectory().createETree({"directory": child.text})
                 if new_node is not None:
                     primitives_xml.append(new_node)
-
+            elif child.tag == 'wakeup':
+                new_node = daveActions.DALightEngineWakeup().createETree({"wakeup": child.text})
+                if new_node is not None:
+                    primitives_xml.append(new_node)
             elif child.tag == "clear_warnings": # Handle the clear_warnings tag
                 new_node = daveActions.DAClearWarnings().createETree({})
                 if new_node is not None:
