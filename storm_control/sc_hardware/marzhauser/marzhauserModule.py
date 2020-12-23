@@ -29,7 +29,7 @@ class MarzhauserStageFunctionality(stageModule.StageFunctionality):
         # current position.
         self.updateTimer = QtCore.QTimer()
         self.updateTimer.setInterval(update_interval)
-        self.updateTimer.setSingleShot(True)
+        #self.updateTimer.setSingleShot(True) #Bogdan Bintu: comment out if you want steve to behave normally. Stephen Eichhorn said might freeze the stage.
         self.updateTimer.timeout.connect(self.handleUpdateTimer)
         self.updateTimer.start()
 
